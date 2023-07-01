@@ -10,6 +10,7 @@ import (
 
 // Average time complexity O(n*log(n)), where n is the number of elements in the array.
 // However, in the worst-case scenario, the time complexity can degrade to O(n^2) if the pivot selection is not optimal.
+// There are multiple strategies for choosing a pivot - first, last, middle, random, etc.
 func QuickSort[T constraints.Ordered](slice []T) []T {
 	if len(slice) <= 1 {
 		return slice

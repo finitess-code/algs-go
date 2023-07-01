@@ -15,7 +15,19 @@ import (
 	"golang.org/x/exp/constraints"
 )
 
-func TestQuickSortForInts(t *testing.T) {
+var (
+	intSorts = []func(slice []int) []int{
+		func(slice []int) []int { return QuickSort[int](slice) },
+		func(slice []int) []int { return MergeSort[int](slice) },
+	}
+
+	stringSorts = []func(slice []string) []string{
+		func(slice []string) []string { return QuickSort[string](slice) },
+		func(slice []string) []string { return MergeSort[string](slice) },
+	}
+)
+
+func TestAllSortsForInts(t *testing.T) {
 	testCases := []struct {
 		initial  []int
 		expected []int
@@ -28,20 +40,24 @@ func TestQuickSortForInts(t *testing.T) {
 		{initial: []int{1, 3, 4, 2, 5}, expected: []int{1, 2, 3, 4, 5}},
 	}
 
-	for i, tc := range testCases {
-		assert.Exactlyf(t, tc.expected, QuickSort[int](tc.initial), msgWithIndex(i))
+	for i, sort := range intSorts {
+		for j, tc := range testCases {
+			assert.Exactlyf(t, tc.expected, sort(tc.initial), msgWithIndexes(i, j))
+		}
 	}
 }
 
-func TestQuickSortForRandomInts(t *testing.T) {
+func TestAllSortsForRandomInts(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 	slice1, slice2 := copySlice[int](rand.Perm(10_000))
 	sort.Ints(slice1)
-	actual := QuickSort[int](slice2)
-	assert.Exactly(t, slice1, actual)
+
+	for i, sort := range intSorts {
+		assert.Exactly(t, slice1, sort(slice2), msgWithIndex(i))
+	}
 }
 
-func TestQuickSortForStrings(t *testing.T) {
+func TestAllSortsForStrings(t *testing.T) {
 	testCases := []struct {
 		initial  []string
 		expected []string
@@ -55,12 +71,14 @@ func TestQuickSortForStrings(t *testing.T) {
 		{initial: []string{"a", "c", "d", "b", "e"}, expected: []string{"a", "b", "c", "d", "e"}},
 	}
 
-	for i, tc := range testCases {
-		assert.Exactlyf(t, tc.expected, QuickSort[string](tc.initial), msgWithIndex(i))
+	for i, sort := range stringSorts {
+		for j, tc := range testCases {
+			assert.Exactlyf(t, tc.expected, sort(tc.initial), msgWithIndexes(i, j))
+		}
 	}
 }
 
-func TestQuickSortForRandomStrings(t *testing.T) {
+func TestAllSortsForRandomStrings(t *testing.T) {
 	charset := "abcdefghijklmnopqrstuvwxyz"
 	rand.Seed(time.Now().UnixNano())
 	slice1 := make([]string, 10_000)
@@ -69,8 +87,10 @@ func TestQuickSortForRandomStrings(t *testing.T) {
 	}
 	slice1, slice2 := copySlice[string](slice1)
 	sort.Strings(slice1)
-	actual := QuickSort[string](slice2)
-	assert.Exactly(t, slice1, actual)
+
+	for i, sort := range stringSorts {
+		assert.Exactly(t, slice1, sort(slice2), msgWithIndex(i))
+	}
 }
 
 func copySlice[T constraints.Ordered](slice []T) ([]T, []T) {
@@ -80,5 +100,9 @@ func copySlice[T constraints.Ordered](slice []T) ([]T, []T) {
 }
 
 func msgWithIndex(i int) string {
-	return fmt.Sprintf("test case index: %d", i)
+	return fmt.Sprintf("sort index: %d", i)
+}
+
+func msgWithIndexes(i, j int) string {
+	return fmt.Sprintf("sort index: %d, test case index: %d", i, j)
 }
