@@ -1,5 +1,5 @@
 
-name: Main pipeline for Go library
+name: algs-go
 
 on:
     push:
